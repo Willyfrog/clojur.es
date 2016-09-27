@@ -3,46 +3,72 @@
             [hiccup.page :refer [html5]]
             [clojure.java.io :as io]
             [clojure.string :as string]
-            [markdown.core :as markdown]))
+            [markdown.core :as markdown]
+            [optimus.assets :as assets]
+            [optimus.link :as link]
+            [optimus.optimizations :as optimizations]
+            [optimus.prime :as optimus]
+            [optimus.strategies :refer [serve-live-assets]]))
 
 (defn layout-page
   ""
-  [page]
+  [request page]
   (html5 
     [:head
      [:meta {:charset "utf-8"}]
      [:meta {:name "viewport"
              :content "width=device-width, initial-scale=1.0"}]
      [:title "Clojur.es - Clojure en español"]
-     [:link {:rel "stylesheet" :href "/styles/styles.css"}]
-     [:link {:rel "stylesheet" :href "/js/highlight/styles/atelier-dune-light.css"}]]
+     [:link {:rel "stylesheet" :href (link/file-path request "/styles/styles.css")}]
+     [:link {:rel "stylesheet" :href (link/file-path request "/js/highlight/styles/atelier-dune-light.css")}]]
     [:body
      [:div.logo "clojur.es"]
      [:div.body page]
-     [:script {:src "/js/highlight/highlight.pack.js"}]
+     [:script {:src (link/file-path request "/js/highlight/highlight.pack.js")}]
      [:script "hljs.initHighlightingOnLoad();"]]))
 
 (defn about-page
   [request]
-  (layout-page (slurp (io/resource "partials/about.html"))))
+  (layout-page request (slurp (io/resource "partials/about.html"))))
+
+(defn get-assets
+  "make optimus load the assets"
+  []
+  (assets/load-assets "assets" [#".*"]))
+
 
 (defn partial-pages
   "Gather all partials and add its layout"
   [pages]
   (zipmap (keys pages)
-          (map layout-page (vals pages))))
+          (map (fn [page]
+                 (fn [request] (layout-page request page)))
+               (vals pages))))
 
 (defn- md-page 
-  [page]
-  (println "getting pages " page)
-  (layout-page (markdown/md-to-html-string page)))
+  [request page]
+  (layout-page request (markdown/md-to-html-string page)))
 
 ;; this could be improved, can we do the layout in markdown?
 (defn markdown-pages
   ""
   [pages]
   (zipmap (map #(string/replace % #"\.md$" "/") (keys pages))
-          (map md-page (vals pages))))
+          (map (fn [page]
+                 (fn [request]
+                   (md-page request page)))
+               (vals pages))))
+
+(defn prepare-page
+  [page request] ;; this fn used to contain a thread operator, but we dont need it anymore
+  (if (string? page)
+    page
+    (page request)))
+
+(defn prepare-pages
+  [pages]
+  (zipmap (keys pages)
+          (map #(partial prepare-page %) (vals pages))))
 
 (defn get-pages
   "Get any generated pages + static"
@@ -55,4 +81,8 @@
 
 ;; get anything in the public resources and serve it as a ring app
 ;; this is meant for development purposes.
-(def app (stasis/serve-pages get-pages)) 
+(def app
+  (optimus/wrap (stasis/serve-pages (prepare-pages (get-pages)))
+                get-assets
+                optimizations/all
+                serve-live-assets)) 
