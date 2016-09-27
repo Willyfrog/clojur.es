@@ -1,14 +1,13 @@
 # clojur.es
 
-A Clojure library designed to ... well, that part is up to you.
+Clojure spanish blog
 
 ## Usage
 
-FIXME
+`lein ring server` will launch a server for live previewing posts
 
 ## License
 
-Copyright © 2016 FIXME
+Copyright © 2016 Guillermo Vayá
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+Distributed under the BSD 2 Clause License for code
