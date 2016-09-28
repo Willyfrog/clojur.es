@@ -12,4 +12,7 @@
                  [optimus "0.19.0"]]
   :ring {:handler clojur.web/app}
   :aliases {"build-site" ["run" "-m" "clojur.web/export"]}
-  :profiles {:dev {:plugins [[lein-ring "0.9.7"]]}})
+  :profiles {:dev {:plugins [[lein-ring "0.9.7"]]}
+             :test {:dependencies [[midje "1.8.3"]
+                                   [enlive "1.1.6"]]
+                    :plugins [[lein-midje "3.2.1"]]}})

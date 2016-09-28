@@ -17,3 +17,4 @@ It's pretty short for now. Here's our project.clj:
       :ring {:handler clojur.web/app}
       :profiles {:dev {:plugins [[lein-ring "0.9.7"]]}})
 
+[About me](/about/)
