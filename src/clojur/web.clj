@@ -5,6 +5,7 @@
             [clojure.string :as string]
             [markdown.core :as markdown]
             [optimus.assets :as assets]
+            [optimus.export]
             [optimus.link :as link]
             [optimus.optimizations :as optimizations]
             [optimus.prime :as optimus]
@@ -86,3 +87,15 @@
                 get-assets
                 optimizations/all
                 serve-live-assets)) 
+
+;; static build
+
+(def export-dir "dist")
+
+(defn export
+  ""
+  []
+  (let [assets (optimizations/all (get-assets) {})]
+    (stasis/empty-directory! export-dir)
+    (optimus.export/save-assets assets export-dir)
+    (stasis/export-pages (get-pages) export-dir {:optimus-assets assets})))

@@ -11,4 +11,5 @@
                  [markdown-clj "0.9.68"]
                  [optimus "0.19.0"]]
   :ring {:handler clojur.web/app}
+  :aliases {"build-site" ["run" "-m" "clojur.web/export"]}
   :profiles {:dev {:plugins [[lein-ring "0.9.7"]]}})
